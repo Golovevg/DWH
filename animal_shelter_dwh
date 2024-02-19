@@ -1,0 +1,216 @@
+------------------------------------------БЛОК ЖИВОТНЫЕ ОПИСАНИЕ И ОФОРМЛЕНИЕ В ПРИЮТ--------------------------------------------
+
+-- Таблица "Species" - информация о разных видах животных
+CREATE TABLE Species (
+    SpeciesID INT PRIMARY KEY,
+    SpeciesName VARCHAR(50) NOT NULL
+);
+
+-- Таблица "Gender" - информация о поле животного
+CREATE TABLE Gender (
+    GenderID INT PRIMARY KEY,
+    GenderName VARCHAR(10)
+);
+
+-- Таблица "Reason" - информация о причине
+CREATE TABLE Reason (
+    ReasonID INT PRIMARY KEY,
+    ReasonName VARCHAR(100)
+);
+
+-- Таблица "Fertility" - информация о способности иметь потомство (да, нет, не определено)
+CREATE TABLE Fertility (
+    FertilityID INT PRIMARY KEY,
+    FertilityStatus VARCHAR(10)
+);
+
+-- Таблица "Animals" - информация о животных в приюте
+CREATE TABLE Animals (
+    AnimalID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Age INT,
+    GenderID INT,
+    Color VARCHAR(50),
+    SpeciesID INT,
+    FOREIGN KEY (SpeciesID) REFERENCES Species (SpeciesID),
+    FOREIGN KEY (GenderID) REFERENCES Gender (GenderID)
+);
+
+
+-- Таблица "MedicalRecords" - информация о медицинских картах животных и оплодотворяемости
+CREATE TABLE MedicalRecords (
+    RecordID INT PRIMARY KEY,
+    AnimalID INT,
+    FertilityID INT,
+    Weight INT,
+    NormalWeight INT,
+    FOREIGN KEY (AnimalID) REFERENCES Animals (AnimalID),
+    FOREIGN KEY (FertilityID) REFERENCES Fertility (FertilityID)
+);
+
+
+-- Таблица "Admission" - информация о приеме животного в приют
+CREATE TABLE Admission (
+    AdmissionID INT PRIMARY KEY,
+    DateAdmitted DATE,
+    ReasonID INT,
+    AnimalID INT,
+    FOREIGN KEY (ReasonID) REFERENCES Reason (ReasonID),
+    FOREIGN KEY (AnimalID) REFERENCES Animals (AnimalID)
+);
+
+
+------------------------------------------БЛОК ПЕРСОНАЛА--------------------------------------------
+
+-- Таблица "Volunteers" - информация о волонтерах
+CREATE TABLE Volunteers (
+    VolunteerID INT PRIMARY KEY,
+    VolunteerDocument VARCHAR(100) not null
+);
+
+-- Таблица "People" - информация о людях работающих в приюте
+CREATE TABLE People (
+    PeopleID int primary key, 
+    VolunteerID INT,
+    Name VARCHAR(100) NOT NULL,
+    Address varchar(100) not null,
+    FOREIGN KEY (VolunteerID) REFERENCES Volunteers (VolunteerID)
+);
+
+-- Таблица "Organization" - информация об организациях-жертвователях
+CREATE TABLE Organization (
+    OrganizationID int primary key,
+    VolunteerID INT,
+    Name VARCHAR(100) NOT NULL,
+    Address varchar(100) not null,
+    FOREIGN KEY (VolunteerID) REFERENCES Volunteers (VolunteerID)
+);
+
+
+------------------------------------------БЛОК АКТИВНОСТЕЙ--------------------------------------------
+
+-- Таблица "Events" - информация о различных событиях и мероприятиях в приюте
+CREATE TABLE Events (
+    EventID INT PRIMARY KEY,
+    EventName VARCHAR(100)
+);
+
+-- Таблица "EventAnimalVolunteer" - таблица участников событий
+CREATE TABLE EventAnimalVolunteer (
+    EventID INT,
+    VolunteerID INT,
+    AnimalID INT,
+    FOREIGN KEY (AnimalID) REFERENCES Animals (AnimalID),
+    FOREIGN KEY (VolunteerID) REFERENCES Volunteers  (VolunteerID),
+    FOREIGN KEY (EventID) REFERENCES Events (EventID)
+);
+
+
+
+------------------------------------------БЛОК ДОХОДОВ--------------------------------------------
+-- Таблица "MoneyType" - информация о типе денежных пожертвований. Наличные, Безналичные Сбер, Карта Тиньков, Криптовалюта, Патреон
+CREATE TABLE MoneyType (
+    MoneyTypeID INT PRIMARY KEY,
+    MoneyName varchar(30) not null
+);
+
+-- Таблица "FoodType" - информация о типе корма и для какого вида предназначен. Сухой, мокрый
+CREATE TABLE FoodType (
+    FoodTypeID INT PRIMARY KEY,
+    FoodName varchar(30) not null,
+    SpeciesID int,
+    foreign key (SpeciesID) references Species (SpeciesID)
+);
+
+-- Таблица "MoneyDonation" - информация о пожертвованиях и волонтерах, собравших пожертвования
+CREATE TABLE MoneyDonation (
+    DonationID INT PRIMARY KEY,
+    VolunteerID int default 0,
+    MoneyTypeID int, 
+    Amount DECIMAL(10, 2) not null,
+    FOREIGN KEY (VolunteerID) REFERENCES Volunteers (VolunteerID),
+    FOREIGN KEY (MoneyTypeID) REFERENCES MoneyType (MoneyTypeID)
+);
+
+
+-- Таблица "MoneyBank" - информация о накоплениях денег
+CREATE TABLE MoneyBank (
+    MoneyTypeID int,
+    Amount DECIMAL(10, 2) not null,
+    FOREIGN KEY (MoneyTypeID) REFERENCES MoneyType  (MoneyTypeID)
+);
+
+-- Таблица "FoodDonation" - информация о пожертвованиях корма и его типе, собравших пожертвования
+CREATE TABLE FoodDonation  (
+    DonationID INT PRIMARY KEY,
+    VolunteerID INT default 0,
+    FoodTypeID int,
+    Amount DECIMAL(10, 2) not null,
+    FOREIGN KEY (VolunteerID) REFERENCES Volunteers (VolunteerID),
+    FOREIGN KEY (FoodTypeID) REFERENCES  FoodType (FoodTypeID)
+);
+
+-- Таблица "FoodBank" - информация о накоплениях корма
+CREATE TABLE FoodBank (
+    FoodTypeID int,
+    Amount DECIMAL(10, 2) not null,
+    FOREIGN KEY (FoodTypeID) REFERENCES FoodType (FoodTypeID)
+);
+    
+------------------------------------------БЛОК РАСХОДОВ--------------------------------------------
+
+-- Таблица "MoneyExpencesType" - информация о типе расходов. Комунальные, Корм, Медицина, Ремонты, Реклама
+CREATE TABLE MoneyExpencesType (
+    ExpencesTypeID INT PRIMARY KEY,
+    ExpencesTypeName varchar(30) not null
+);
+
+-- Таблица "MoneyExpences" - информация о тратах 
+CREATE TABLE MoneyExpences (
+	MoneyExpencesID int primary key, 
+	MoneyTypeID int,
+	ExpencesTypeID int,
+    Amount DECIMAL(10, 2) not null,
+    FOREIGN KEY (MoneyTypeID) REFERENCES MoneyType (MoneyTypeID),
+	FOREIGN KEY (ExpencesTypeID) REFERENCES MoneyExpencesType (ExpencesTypeID)
+);
+
+-- Таблица "FoodExpences" - информация о расходе корма
+CREATE TABLE FoodExpences (
+	FoodExpencesID int primary key, 
+	FoodTypeID int,
+    Amount DECIMAL(10, 2) not null,
+    FOREIGN KEY (FoodTypeID) REFERENCES FoodType (FoodTypeID)
+);
+
+----------------------------------------БЛОК УСЫНОВЛЕНИЯ--------------------------------------------
+
+-- Таблица "NewOwner" - информация о новых хозяевах
+
+CREATE TABLE NewOwner (
+    NewOwnerID int primary key, 
+    Name VARCHAR(100) NOT NULL,
+    Address varchar(100) not null,
+    OwnerDocument varchar (20) not null,
+    OwnerPhone varchar (20) not null
+);
+
+
+-- Таблица "Adoption" - информация об усыновлениях животных из приюта
+CREATE TABLE Adoption (
+    AdoptionID INT PRIMARY KEY,
+    AnimalID INT,
+    DateAdopted DATE,
+    NewOwnerID int,
+    FOREIGN KEY (AnimalID) REFERENCES Animals (AnimalID),
+    FOREIGN KEY (NewOwnerID) REFERENCES NewOwner (NewOwnerID)
+);
+
+-- Таблица "Control" - информация о судьбе животных
+CREATE TABLE Controls (
+    ControlID INT PRIMARY key,
+    AdoptionID INT,
+    DateControl DATE,
+    ReportControl VARCHAR(1000),
+    FOREIGN KEY (AdoptionID) REFERENCES Adoption (AdoptionID)
+);
